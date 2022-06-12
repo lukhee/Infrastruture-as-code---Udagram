@@ -3,6 +3,9 @@ This folder provides the supporting material and starter code for the "UDAGRAM -
 1. project_starter - It contains the starter code.
 2. supporting_material - It contains the essential files (.yml, .json, .bat, .sh, and .jpeg) that were referred in success of the project.
 
+### Diagram
+![](UDAGRAM_IAAC.jpeg)
+
 ### Dependencies
 ##### 1. AWS account
 You would require to have an AWS account to be able to build cloud infrastructure.
