@@ -174,4 +174,4 @@ Resources:
 #   LoadBalancerUrl:
 #     Description: The URL of the ALB
 #     Value: !Sub http://${WebAppLB.DNSName}
-    # Value: !GetAtt LoadBalancer.DNSName
+#     Value: !GetAtt LoadBalancer.DNSName
