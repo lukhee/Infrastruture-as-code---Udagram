@@ -3,6 +3,11 @@ This folder provides the supporting material and starter code for the "UDAGRAM -
 1. project_starter - It contains the starter code.
 2. supporting_material - It contains the essential files (.yml, .json, .bat, .sh, and .jpeg) that were referred in success of the project.
 
+
+### LoadBalancer Url 
+You can preview the result hosted site assignment [here](http://udagr-webap-190dq1j7sdkm2-1829311592.us-east-1.elb.amazonaws.com/)
+Note: the above will be available for a short while for testing since continues running of the server will be accumulating charges on me.
+
 ### Diagram
 ![](UDAGRAM_IAAC.jpeg)
 

@@ -1,11 +1,20 @@
 Description: >
-  Udacity / Server-Assignment
+  Udacity / Services - Assignment
+  This template deploys a SecurityGroup, LaunchConfiguration, Policy, AutoScalingGroup, LoadBalancer and Output the LoadBalancer DNSName for Testing.
 
+#PARAMETERS
 Parameters:
   EnvironmentName:
     Description: An environment name that will be prefixed to resource names
     Type: String
+    Default: Udagram
 
+  EC2InstanceImageId:
+    Description: EC2 instance Image ID
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: EC2InstanceImageId
+
+#RESOURCES
 Resources:
   LBSecGroup:
     Type: AWS::EC2::SecurityGroup
@@ -24,6 +33,7 @@ Resources:
         FromPort: 80
         ToPort: 80
         CidrIp: 0.0.0.0/0
+
   WebServerSecGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -32,10 +42,6 @@ Resources:
         Fn::ImportValue:
           !Sub "${EnvironmentName}-VPCID"
       SecurityGroupIngress:
-      - IpProtocol: tcp
-        FromPort: 8080
-        ToPort: 8080
-        CidrIp: 0.0.0.0/0
       - IpProtocol: tcp
         FromPort: 80
         ToPort: 80
@@ -57,12 +63,14 @@ Resources:
         Fn::Base64: !Sub |
           #!/bin/bash
           sudo apt-get update -y
+          sudo apt-get install unzip awscli -y
           sudo apt-get install apache2 -y
-          sudo systemctl start apache2.service          
+          sudo aws s3 cp s3://udagram-class/index.html  /var/www/html 
+          sudo systemctl start apache2.service   
       # ToDo: AMI ID of Ubuntu Linux machine. Too get one, try creating a VM from the web console. 
-      ImageId: ami-052efd3df9dad4825
+      ImageId: !Ref EC2InstanceImageId
       # ToDo: Change the key-pair name, as applicable to you. 
-      KeyName: Prometheus
+      # KeyName: Prometheus
       SecurityGroups:
       - Ref: WebServerSecGroup
       InstanceType: t3.medium
@@ -84,8 +92,8 @@ Resources:
             Action:
               - s3:*
             Resource:
-              - arn:aws:s3:::demo-s3-bucket/*
-              - arn:aws:s3:::demo-s3-bucket
+              - arn:aws:s3:::udagram-class/*
+              - arn:aws:s3:::udagram-class
       Roles:
         -
           !Ref Ec2InstanceRole
@@ -113,6 +121,7 @@ Resources:
             Action:
               - sts:AssumeRole
       Path: /
+
   WebAppGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
@@ -125,6 +134,7 @@ Resources:
       MaxSize: '4'
       TargetGroupARNs:
       - Ref: WebAppTargetGroup
+
   WebAppLB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -133,6 +143,7 @@ Resources:
       - Fn::ImportValue: !Sub "${EnvironmentName}-PUB2-SN"
       SecurityGroups:
       - Ref: LBSecGroup
+
   Listener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -144,6 +155,7 @@ Resources:
         Ref: WebAppLB
       Port: '80'
       Protocol: HTTP
+
   ALBListenerRule:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
@@ -155,6 +167,7 @@ Resources:
         Values: [/]
       ListenerArn: !Ref 'Listener'
       Priority: 1
+
   WebAppTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -170,8 +183,10 @@ Resources:
         Fn::ImportValue:
           Fn::Sub: "${EnvironmentName}-VPCID"
 
-# Outputs:
-#   LoadBalancerUrl:
-#     Description: The URL of the ALB
-#     Value: !Sub http://${WebAppLB.DNSName}
-#     Value: !GetAtt LoadBalancer.DNSName
+#OUTPUT
+Outputs:
+  LoadBalancerUrl:
+    Description: The URL of the ALB
+    Value: !Sub http://${WebAppLB.DNSName}
+    Export:
+      Name: !Sub ${EnvironmentName}-LB-DNSName
